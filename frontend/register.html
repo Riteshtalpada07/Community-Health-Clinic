@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register - Community Health Clinic</title>
+  <link rel="icon" href="images/first-aid-box_6705669.png" type="image/png" />
+  <link rel="stylesheet" href="register.css" />
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>Register</h2>
+    <form class="loginForm">
+
+      <input type="text" name="fullname" placeholder="Full Name" required />
+      <input type="email" name="email" placeholder="Email Address" required />
+      <input type="tel" name="phone" placeholder="Phone Number" required />
+      <input type="password" name="password" placeholder="Create Password" required />
+
+      <div class="select_bar">
+        <label for="role">Select Role:</label>
+        <select name="role" required>
+          <option value="patient">Patient</option>
+          <option value="doctor">Doctor</option>
+        </select>
+      </div>
+
+      <button type="submit">Sign Up</button>
+    </form>
+    <div id="registerError" style="color:red;margin-top:10px;"></div>
+    <div id="registerSuccess" style="margin-top:10px;"></div>
+    <p style="margin-top:12px;">
+      Already have an account? <a href="login.html">Login</a>
+    </p>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>

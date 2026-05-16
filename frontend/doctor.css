@@ -1,0 +1,262 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+     color: white;
+}
+
+body {
+    height: 90%;
+    width: 100%;
+    background: white;
+    backdrop-filter: blur(9px);
+    background-image: url(images/7514780.jpg);
+    background-size: cover;
+    background-attachment: fixed;
+    overflow-x: hidden;
+   
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+section {
+    padding: 40px;
+    border: none;
+}
+
+.main {
+    min-height: 100vh;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.navbar {
+    width: 100%;
+    height: auto;
+    padding: 10px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-around;
+    position: relative;
+}
+
+.logo img {
+    height: 50px;
+    width: 50px;
+
+}
+
+.nav-links-container {
+    width: 50%;
+    height: 8vh;
+    background-color: rgba(255, 253, 253, 0.2);
+    border-radius: 30px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.nav-links {
+    width: 60%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    list-style: none;
+    flex-wrap: wrap;
+}
+
+.nav-links a {
+    position: relative;
+    transition: 0.2s ease;
+    font-size: 1rem;
+    padding-bottom: 6px;
+}
+
+.nav-links a::after {
+    content: "";
+    position: absolute;
+    width: 0%;
+    height: 2px;
+    right: 0;
+    bottom: 0;
+    background-color: #b2c9e0;
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+    left: 0;
+}
+
+.nav-links a:hover {
+    color: #b2c9e0;
+}
+
+.btn {
+    height: 30px;
+    width: 70px;
+    border-radius: 20px;
+    border: none;
+    font-weight: bold;
+    background: linear-gradient(to right, #ff6b6b, #f31927);
+    margin: 3px;
+    transition: 0.4s ease;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: linear-gradient(to right, #f31927, #ff6b6b);
+    transform: scale(.92);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+#dashboard {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin: 60px;
+}
+
+p {
+    width: 500px;
+    text-align: center;
+}
+
+#content {
+    background: linear-gradient(rgba(68, 187, 211, 0.5), rgba(204, 203, 203, 0.6));
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 40px;
+    border-radius: 40px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.18);
+    transition: all 0.4s ease;
+}
+.card{
+    text-align: left;
+}
+
+#content:hover {
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.3), 0 10px 12px rgba(0, 0, 0, 0.22);
+    transform: translateY(-6px);
+}
+
+
+.right {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.content_section {
+    height: 80vh;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+}
+.appointments {
+    height:75vh;
+     width: 30%;
+  
+}
+.appointments h2{
+    width: 280px;
+    height: 35px;
+    text-align: left;
+
+}
+#content p{
+    text-align: left;
+    width: 100%;
+    margin-bottom: 10px;
+    color: red;
+}
+#content h2{
+    margin-bottom: 2px;
+}
+.prescriptions,
+.reports {
+   
+    height: 50vh;
+     width:500px;
+    
+}
+
+.update {
+    height: 35px;
+    width: 80px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 20px;
+    background: radial-gradient(#52606f 0%, #436c8b 15%, #1b4667 60%);
+    transition: .4s ease;
+}
+
+.update:hover {
+    opacity: 0.9;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+#prescriptionForm {
+
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 12px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  display: none;
+}
+
+#prescriptionForm h2 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+#prescriptionForm input[type="text"] {
+  width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+  background-color: rgba(2,28,53,.5);
+  transition: border-color 0.3s;
+}
+
+#prescriptionForm input[type="text"]:focus {
+  border-color: #2f80ed;
+  outline: none;
+}
+
+#prescriptionForm button[type="submit"] {
+  background-color: #2f80ed;
+  border: none;
+  padding: 10px 18px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s ease;
+}
+
+#prescriptionForm button[type="submit"]:hover {
+  background-color: #2466c2;
+}
+
+#prescriptionStatus {
+  text-align: center;
+  margin-top: 12px;
+  font-weight: bold;
+  font-size: 14px;
+}
+

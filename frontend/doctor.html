@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Portal - ClinicCare</title>
+  <link rel="icon" href="images/first-aid-box_6705669.png" type="image/png" />
+  <link rel="stylesheet" href="doctor.css" />
+</head>
+<body>
+   <div class="main">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-links-container">
+    <div class="logo">
+      <img src="images/first-aid-box_6705669.png" alt="Clinic Logo" height="40" />
+    </div>
+    <ul class="nav-links">
+      <li><a href="#dashboard">Dashboard</a></li>
+      <li><a href="#appointments">Appointments</a></li>
+      <li><a href="#prescriptions">Prescriptions</a></li>
+      <li><a href="#patients">Patients</a></li>
+    </ul>
+    </div>
+    <div class="auth-buttons">
+      <button type="button" class="btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- Dashboard Section -->
+  <section id="dashboard">
+    <h1 class="section-title" id="welcomeTitle">Welcome, Doctor</h1>
+    <p>Manage patient interactions, update prescriptions, and review health reports.</p>
+  </section>
+   
+  <div class="content_section">
+  <!-- Appointments Section (Left) -->
+  <section class="appointments" id="appointments">
+    <h2 class="section-title">Appointments</h2>
+    <div id="appointmentsList">
+      <p>Loading appointments...</p>
+    </div>
+  </section>
+  
+  <!-- Prescriptions Section (Right) -->
+  <div class="right">
+    <section class="prescriptions" id="prescriptions">
+      <div class="card" id="prescriptionCard">
+        <h2 class="section-title">Prescriptions</h2>
+        <p>Your prescriptions issued to patients.</p>
+        <div id="doctorPrescriptionsTable">
+          <p>Loading prescriptions...</p>
+        </div>
+      </div>
+
+      <!-- Add New Prescription Form -->
+      <form id="prescriptionForm" style="display: none;">
+        <h2 class="section-title">Add Prescription</h2>
+        <input type="text" name="patientName" id="prescriptionPatientName" placeholder="Patient Name" required />
+        <input type="text" name="medication" placeholder="Medication" required />
+        <input type="text" name="dosage" placeholder="Dosage" required />
+        <input type="hidden" name="createdBy" id="prescriptionCreatedBy" value="" />
+        <button type="submit">Submit</button>
+        <p id="prescriptionStatus"></p>
+      </form>
+
+      <!-- Search & Manage Prescriptions -->
+      <div class="card" style="margin-top: 20px;">
+        <h3>Search & Manage Prescriptions</h3>
+        <input type="text" id="searchPatientName" placeholder="Enter patient name" style="width: 100%; padding: 8px; margin: 5px 0;" />
+        <button type="button" id="searchPrescriptionBtn" style="background: #007bff; color: white; padding: 8px 16px; border: none; border-radius: 4px;">Search</button>
+        <div id="searchResults" style="margin-top: 15px;"></div>
+      </div>
+
+      <!-- Edit Prescription Form -->
+      <div class="card" id="editPrescriptionCard" style="display: none; margin-top: 20px; background: #f8f9fa;">
+        <h3>Edit Prescription</h3>
+        <form id="editPrescriptionForm">
+          <input type="hidden" id="editPrescriptionId" />
+          <input type="text" id="editMedication" placeholder="Medication" required style="width: 100%; padding: 8px; margin: 5px 0;" />
+          <input type="text" id="editDosage" placeholder="Dosage" required style="width: 100%; padding: 8px; margin: 5px 0;" />
+          <button type="submit" style="background: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px;">Update</button>
+          <button type="button" id="cancelEditBtn" style="background: #6c757d; color: white; padding: 8px 16px; border: none; border-radius: 4px;">Cancel</button>
+          <p id="editPrescriptionStatus"></p>
+        </form>
+      </div>
+    </section>
+  </div>
+  </div>
+
+  <!-- Patients Section -->
+  <section class="reports" id="patients">
+    <div class="card">
+      <h2 class="section-title">Patient Records</h2>
+      <p>View all registered patients.</p>
+      <div id="patientsList">
+        <p>Loading patients...</p>
+      </div>
+    </div>
+  </section>
+  </div>
+  
+<script src="main.js"></script>
+</body>
+</html>
