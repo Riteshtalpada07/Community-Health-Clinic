@@ -4,13 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Patient Dashboard - ClinicCare</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="icon" href="images/first-aid-box_6705669.png" type="image/png" />
-  <link rel="stylesheet" href="patient.css" />
+  <link rel="stylesheet" href="styles/patient.css" />
 </head>
 <body>
 
-  <!-- Navbar -->
   <nav class="navbar">
     <div class="nav-links-container">
       <div class="logo">
@@ -29,74 +27,75 @@
     </div>
   </nav>
 
-  <!-- Main Content -->
   <div class="dashboard-content">
 
-    <!-- Dashboard Section -->
     <section id="dashboard" class="welcome">
-      <h1>Welcome,<span id="patientName">Patient</span></h1>
+      <h1>Welcome, <span id="patientName">Patient</span></h1>
       <p>Here's a quick overview of your clinic activity.</p>
     </section>
 
     <section id="overview" class="content">
       <div class="box">
+        <div class="icon-badge">
+          <img src="images/tomorrow_6755675.png" alt="">
+        </div>
         <h2>Next Appointment</h2>
-        <img src="images/tomorrow_6755675.png" alt="">
       </div>
       <div class="box" id="nextAppointment">
-        <p>Loading appointment...</p>
+        <p class="loading-text">Loading appointment...</p>
       </div>
     </section>
 
-    <!-- My Appointments Section -->
     <section id="appointments" class="content">
-      <div class="box" style="width: 100%;">
+      <div class="box w-full">
         <h2>My Appointments</h2>
-        <button type="button" class="btn_book" style="margin-bottom: 15px;">Book New Appointment</button>
+        <button type="button" class="btn-book mb-1">Book New Appointment</button>
         <div id="allAppointments">
-          <p>Loading appointments...</p>
+          <p class="loading-text">Loading appointments...</p>
         </div>
       </div>
     </section>
 
-    <!-- Medical Records Section -->
     <section id="records" class="content">
       <div class="box">
-      <h2>Medical Records</h2>
-      <img src="images/medical-folder_12715609.png" alt="">
+        <div class="icon-badge">
+          <img src="images/medical-folder_12715609.png" alt="">
+        </div>
+        <h2>Medical Records</h2>
       </div>
       <div class="box">
-      <p>View or download your past prescriptions and reports.</p>
-      <ul id="prescriptionsList">
-        <li>Loading prescriptions...</li>
-      </ul>
+        <p>View or download your past prescriptions and reports.</p>
+        <ul id="prescriptionsList">
+          <li class="loading-text">Loading prescriptions...</li>
+        </ul>
       </div>
     </section>
 
-    <!-- Detailed Prescriptions Section -->
     <section id="prescriptions" class="content">
-      <div class="box" style="width: 100%;">
+      <div class="box w-full">
         <h2>Prescription History</h2>
         <div id="prescriptionHistory">
-          <p>Loading prescription history...</p>
+          <p class="loading-text">Loading prescription history...</p>
         </div>
       </div>
     </section>
 
-    <!-- Profile Section -->
     <section id="profile" class="content">
-   
-      <div class="box" id="profileInfo">      
-      <p>Loading profile...</p>
+      <div class="box" id="profileInfo">
+        <p class="loading-text">Loading profile...</p>
       </div>
-         <div class="box">
-      <h2>Your Profile</h2>
-      <img src="images/account_17740774.png" alt="">
+      <div class="box">
+        <div class="icon-badge">
+          <img src="images/account_17740774.png" alt="">
+        </div>
+        <h2>Your Profile</h2>
       </div>
     </section>
 
   </div>
 
+  <script src="config.js"></script>
+  <script src="utils/auth.js"></script>
   <script src="main.js"></script>
 </body>
 </html>

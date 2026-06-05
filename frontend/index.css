@@ -7,15 +7,13 @@
 }
 
 body {
-
-    height:90%;
     width: 100%;
-    background: white;
-    backdrop-filter: blur(9px);
-   background-image: url(images/7514780.jpg);
-   background-size: cover;
-   background-attachment: fixed;
-  overflow-x: hidden;
+    min-height: 100vh;
+    background-image: url(images/7514780.jpg);
+    background-size: cover;
+    background-attachment: fixed;
+    background-color: #1b4667;
+    overflow-x: hidden;
 }
 html {
   scroll-behavior: smooth;
@@ -77,8 +75,8 @@ a{
 
 /* LOGO */
 .logo img {
-    height: 50px;
-    width: 50px;
+    height: 3.125rem;
+    width: 3.125rem;
     background-size: cover;
    
 }
@@ -134,9 +132,9 @@ a{
 
 /* BUTTONS */
 #btn {
-    height: 30px;
-    width: 70px;
-    border-radius: 20px;
+    height: 1.875rem;
+    width: 4.375rem;
+    border-radius: 1.25rem;
     border: none;
     font-weight: bold;
     background-color: rgba(255, 253, 253, 0.4);
@@ -179,21 +177,21 @@ a{
 }
 
 .container_data button {
-    margin: 35px;
+    margin: 2.2rem;
     text-decoration: none;
     background: radial-gradient(#3e444a 1%, #436c8b 15%, #1b4667 60%);
-    height: 40px;
-    width: 120px;
+    height: 2.5rem;
+    width: 7.5rem;
     border: none;
-    border-radius: 20px;
+    border-radius: 1.25rem;
     transition: 0.3s ease;
     font-size: 1rem;
 }
 
 .container_data button:hover {
     opacity: .8;
-    width: 140px;
-     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    width: 8.75rem;
+     box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.3);
 }
 
 /* FOOTER */
@@ -230,14 +228,14 @@ a{
 
 @media (max-width: 568px) {
     .main{
-        height: 40%;
+        min-height: 40vh;
     }
     .footer {
-    height: 10%;
+    min-height: 10vh;
     width: 100%;
      }
      .container_data{
-        min-height:20%;
+        min-height: 20vh;
      }
 
     .nav-links-container {

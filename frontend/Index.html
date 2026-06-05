@@ -4,13 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Community Health Clinic</title>
-   <link rel="icon" href="images/first-aid-box_6705669.png" type="image/png" />
-  <link rel="stylesheet" href="index.css" />
+  <link rel="icon" href="images/first-aid-box_6705669.png" type="image/png" />
+  <link rel="stylesheet" href="styles/index.css" />
 </head>
 <body>
 
   <div class="main">
-    <!-- Navbar -->
     <nav class="navbar">
       <div class="nav-links-container">
         <div class="logo">
@@ -24,30 +23,40 @@
         </ul>
       </div>
       <div class="auth-buttons">
-        <button type="button" class="sign-in" id="loginBtn">Login</button>
-        <button type="button" class="sign-up" id="registerBtn">Register</button>
+        <button type="button" class="sign-in btn-primary" id="loginBtn">Login</button>
+        <button type="button" class="sign-up btn-secondary" id="registerBtn">Register</button>
       </div>
     </nav>
 
-    <!-- Hero Section -->
     <div class="container_data">
-         
-      <h1>Welcome to Community Health Clinic</h1>
-      <p>Your trusted platform for booking appointments and accessing medical records securely.</p>
-      <button><a href="login.html">Get Started</a></button>
+      <img src="images/calendar_11815700.png" alt="" class="hero-deco hero-deco--calendar" aria-hidden="true" />
+      <div class="hero-inner">
+        <div class="hero-badge">
+          <img src="images/first-aid-box_6705669.png" alt="" aria-hidden="true" />
+          <span>Trusted Healthcare</span>
+        </div>
+        <h1>Welcome to Community Health Clinic</h1>
+        <p>Your trusted platform for booking appointments and accessing medical records securely.</p>
+        <div class="hero-cta">
+          <button class="btn-primary"><a href="login.html">Get Started</a></button>
+        </div>
+      </div>
     </div>
   </div>
-  <footer class="footer">
-  <div class="footer-content">
-    <p>&copy; 2025 Community Health Clinic. All rights reserved.</p>
-    <div class="footer-links">
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms of Service</a>
-      <a href="#">Contact Us</a>
-    </div>
-  </div>
-</footer>
 
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2025 Community Health Clinic. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Contact Us</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="utils/auth.js"></script>
   <script src="main.js"></script>
 </body>
 </html>

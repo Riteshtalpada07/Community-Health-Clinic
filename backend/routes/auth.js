@@ -1,13 +1,28 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const rateLimit = require("express-rate-limit");
 const router = express.Router();
 const User = require("../models/user");
+
 const {
   authenticateToken,
   requireRole,
   getJwtSecret,
 } = require("../middleware/auth");
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => {
+    res.status(429).json({
+      message:
+        "Too many authentication attempts from this IP. Please try again in 15 minutes.",
+    });
+  },
+});
 
 function signToken(user) {
   return jwt.sign(
@@ -28,7 +43,7 @@ function userNoPassword(userDoc) {
 }
 
 // Register
-router.post("/register", async (req, res) => {
+router.post("/register", authLimiter, async (req, res) => {
   try {
     const { fullname, email, phone, password, role } = req.body;
 
@@ -83,7 +98,7 @@ router.post("/register", async (req, res) => {
 });
 
 // Login
-router.post("/login", async (req, res) => {
+router.post("/login", authLimiter, async (req, res) => {
   const { email, password, role } = req.body;
 
   if (!email || !password || !role) {

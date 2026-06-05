@@ -1,0 +1,176 @@
+@import url("common.css");
+
+#dashboard {
+  text-align: center;
+  padding: 1.5rem clamp(1rem, 3vw, 2rem) 2rem;
+  max-width: var(--max-content);
+  margin: 0 auto;
+}
+
+#dashboard::after {
+  content: "";
+  display: block;
+  width: 4rem;
+  height: 3px;
+  margin: 1.25rem auto 0;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+}
+
+#dashboard .section-title {
+  font-size: clamp(1.6rem, 3.5vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+#dashboard p {
+  max-width: 38rem;
+  margin: 0 auto;
+}
+
+.content_section {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 1.5rem;
+  align-items: start;
+  max-width: var(--max-content);
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 3vw, 2rem) 2.5rem;
+}
+
+.appointments {
+  animation: panelIn 0.6s ease-out both;
+}
+
+.right {
+  animation: panelIn 0.6s ease-out 0.1s both;
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.panel-header img {
+  width: 2.25rem;
+  height: 2.25rem;
+  opacity: 0.85;
+}
+
+.appointments .section-title {
+  margin-bottom: 0;
+}
+
+.prescriptions .card + .card {
+  margin-top: 0;
+}
+
+.prescriptions .card {
+  margin-bottom: 0;
+}
+
+#prescriptionForm {
+  background: linear-gradient(
+    145deg,
+    rgba(27, 70, 103, 0.92),
+    rgba(15, 40, 65, 0.88)
+  );
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-top: 1.15rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(68, 187, 211, 0.2);
+  border-left: 3px solid var(--color-accent);
+  animation: panelIn 0.4s ease-out;
+}
+
+#prescriptionForm:not(.hidden) {
+  display: block;
+}
+
+#prescriptionForm h2 {
+  text-align: center;
+  margin-bottom: 1.15rem;
+  font-weight: 700;
+}
+
+#prescriptionForm button[type="submit"] {
+  width: 100%;
+  margin-top: 0.65rem;
+  background: radial-gradient(
+    circle at 30% 20%,
+    #52606f 0%,
+    var(--color-primary-light) 38%,
+    var(--color-primary) 100%
+  );
+  color: #fff;
+  min-height: 2.65rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#prescriptionForm button[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md), 0 0 20px rgba(68, 187, 211, 0.25);
+}
+
+#prescriptionStatus,
+#editPrescriptionStatus {
+  text-align: center;
+  font-size: 0.84rem;
+  margin-top: 0.65rem;
+}
+
+#editPrescriptionCard {
+  background: linear-gradient(
+    145deg,
+    rgba(27, 70, 103, 0.95),
+    rgba(15, 40, 65, 0.9)
+  ) !important;
+  border: 1.5px solid var(--color-accent) !important;
+  box-shadow: var(--shadow-lg), 0 0 24px rgba(68, 187, 211, 0.15) !important;
+}
+
+#appointmentsList {
+  background: linear-gradient(
+    145deg,
+    rgba(27, 70, 103, 0.88),
+    rgba(15, 40, 65, 0.85)
+  );
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  border: 1px solid rgba(68, 187, 211, 0.2);
+  border-left: 3px solid var(--color-accent);
+}
+
+.reports {
+  max-width: var(--max-content);
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 3vw, 2rem) 3rem;
+}
+
+.reports .card {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .content_section {
+    grid-template-columns: 1fr;
+  }
+}

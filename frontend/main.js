@@ -1,7 +1,39 @@
-const API_BASE = "http://localhost:5000";
+const API_BASE = window.APP_CONFIG?.API_BASE || "http://localhost:5000";
+
+function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    if (!payload.exp) return false;
+    return Date.now() >= payload.exp * 1000;
+  } catch {
+    return true;
+  }
+}
+
+function isPublicPage() {
+  const page = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
+  return ["index.html", "login.html", "register.html"].includes(page);
+}
+
+function handleSessionExpired() {
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+  if (!isPublicPage()) {
+    showToast("Session expired, please login again", "error");
+    window.location.href = "login.html";
+  }
+}
+
+function getJsonHeaders() {
+  return { "Content-Type": "application/json" };
+}
 
 function getAuthHeaders() {
   const token = localStorage.getItem("token");
+  if (token && isTokenExpired(token)) {
+    handleSessionExpired();
+    return getJsonHeaders();
+  }
   return {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -42,7 +74,30 @@ function validateEmail(email) {
 }
 
 function validatePassword(pw) {
-  return typeof pw === "string" && pw.length >= 6;
+  if (typeof pw !== "string" || pw.length < 8) return false;
+  if (!/[A-Z]/.test(pw)) return false;
+  if (!/[0-9]/.test(pw)) return false;
+  if (!/[^A-Za-z0-9]/.test(pw)) return false;
+  return true;
+}
+
+function getPasswordError(pw) {
+  if (typeof pw !== "string" || !pw) {
+    return "Password is required.";
+  }
+  if (pw.length < 8) {
+    return "Password must be at least 8 characters.";
+  }
+  if (!/[A-Z]/.test(pw)) {
+    return "Password must contain at least one uppercase letter.";
+  }
+  if (!/[0-9]/.test(pw)) {
+    return "Password must contain at least one number.";
+  }
+  if (!/[^A-Za-z0-9]/.test(pw)) {
+    return "Password must contain at least one special character.";
+  }
+  return "";
 }
 
 function normalizePhoneDigits(phone) {
@@ -51,7 +106,30 @@ function normalizePhoneDigits(phone) {
 
 function validatePhone(phone) {
   const d = normalizePhoneDigits(phone);
-  return d.length >= 10;
+  return /^[6-9]\d{9}$/.test(d);
+}
+
+function getPhoneError(phone) {
+  const d = normalizePhoneDigits(phone);
+  if (!d) {
+    return "Phone number is required.";
+  }
+  if (d.length !== 10) {
+    return "Enter a valid 10-digit Indian mobile number.";
+  }
+  if (!/^[6-9]/.test(d)) {
+    return "Indian mobile numbers must start with 6, 7, 8, or 9.";
+  }
+  if (!validatePhone(phone)) {
+    return "Enter a valid 10-digit Indian mobile number.";
+  }
+  return "";
+}
+
+function validateAppointmentTime(time) {
+  return /^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/.test(
+    String(time || "").trim()
+  );
 }
 
 function setBtnLoading(btn, loading, loadingText = "Loading...") {
@@ -62,7 +140,7 @@ function setBtnLoading(btn, loading, loadingText = "Loading...") {
     }
     btn.dataset.originalText = btn.textContent;
     btn.disabled = true;
-    btn.textContent = loadingText;
+    btn.textContent = `⏳ ${loadingText}`;
   } else {
     btn.disabled = btn.dataset.originalDisabled === "1";
     delete btn.dataset.originalDisabled;
@@ -73,31 +151,10 @@ function setBtnLoading(btn, loading, loadingText = "Loading...") {
   }
 }
 
-function checkAuth(requiredRole) {
-  const userStr = localStorage.getItem("user");
-  const token = localStorage.getItem("token");
-  if (!userStr || !token) {
-    window.location.href = "login.html";
-    return null;
-  }
-  let user;
-  try {
-    user = JSON.parse(userStr);
-  } catch {
-    window.location.href = "login.html";
-    return null;
-  }
-  if (requiredRole && user.role !== requiredRole) {
-    window.location.href = "login.html";
-    return null;
-  }
-  return user;
-}
-
 function logout() {
   localStorage.removeItem("user");
   localStorage.removeItem("token");
-  window.location.href = "Index.html";
+  window.location.href = "index.html";
 }
 
 window.logout = logout;
@@ -155,44 +212,41 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
+function showEl(el) {
+  if (el) el.classList.remove("hidden");
+}
+
+function hideEl(el) {
+  if (el) el.classList.add("hidden");
+}
+
 async function openBookAppointmentModal(user) {
   const modal = document.createElement("div");
-  modal.style.cssText = `
-    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-    display: flex; justify-content: center; align-items: center; z-index: 1000; color: black;
-  `;
+  modal.className = "modal-overlay";
 
   modal.innerHTML = `
-    <div style="border-radius: 30px; background: rgba(255,255,255,0.95); box-shadow: 0 0 10px rgba(0,0,0,0.4); padding: 30px; width: 400px; max-width: 95vw;">
+    <div class="modal-card">
       <h2>Book Appointment</h2>
       <form id="appointmentForm">
-        <div style="margin: 10px 0;">
-          <label>Doctor:</label>
-          <select name="doctorName" required style="width: 100%; padding: 5px; margin: 5px 0;"></select>
-        </div>
-        <div style="margin: 10px 0;">
-          <label>Date:</label>
-          <input type="date" name="appointmentDate" required style="width: 100%; padding: 5px; margin: 5px 0;" />
-        </div>
-        <div style="margin: 10px 0;">
-          <label>Time:</label>
-          <select name="appointmentTime" required style="width: 100%; padding: 5px; margin: 5px 0;">
-            <option value="">Select Time</option>
-            <option value="09:00 AM">09:00 AM</option>
-            <option value="10:00 AM">10:00 AM</option>
-            <option value="11:00 AM">11:00 AM</option>
-            <option value="02:00 PM">02:00 PM</option>
-            <option value="03:00 PM">03:00 PM</option>
-            <option value="04:00 PM">04:00 PM</option>
-          </select>
-        </div>
-        <div style="margin: 10px 0;">
-          <label>Reason for Visit:</label>
-          <textarea name="reason" required style="width: 100%; padding: 5px; margin: 5px 0; height: 60px;"></textarea>
-        </div>
-        <div style="margin: 20px 0; text-align: center;">
-          <button type="submit" id="bookSubmitBtn" style="background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin: 0 5px;">Book Appointment</button>
-          <button type="button" id="cancelModal" style="background: #6c757d; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin: 0 5px;">Cancel</button>
+        <label>Doctor</label>
+        <select name="doctorName" required></select>
+        <label>Date</label>
+        <input type="date" name="appointmentDate" required />
+        <label>Time</label>
+        <select name="appointmentTime" required>
+          <option value="">Select Time</option>
+          <option value="09:00 AM">09:00 AM</option>
+          <option value="10:00 AM">10:00 AM</option>
+          <option value="11:00 AM">11:00 AM</option>
+          <option value="02:00 PM">02:00 PM</option>
+          <option value="03:00 PM">03:00 PM</option>
+          <option value="04:00 PM">04:00 PM</option>
+        </select>
+        <label>Reason for Visit</label>
+        <textarea name="reason" required rows="3"></textarea>
+        <div class="modal-actions">
+          <button type="submit" id="bookSubmitBtn" class="btn-primary">Book Appointment</button>
+          <button type="button" id="cancelModal" class="btn-secondary">Cancel</button>
         </div>
       </form>
     </div>
@@ -200,18 +254,22 @@ async function openBookAppointmentModal(user) {
 
   document.body.appendChild(modal);
   const sel = modal.querySelector('select[name="doctorName"]');
-  try {
-    await fetchDoctorsForSelect(sel);
-  } catch {
-    showToast("Could not load doctors.", "error");
-    document.body.removeChild(modal);
-    return;
-  }
-
   const form = modal.querySelector("#appointmentForm");
-  form.addEventListener("submit", async (e) => {
+  const submitBtn = modal.querySelector("#bookSubmitBtn");
+  const cancelBtn = modal.querySelector("#cancelModal");
+
+  const closeModal = () => {
+    form.removeEventListener("submit", onSubmit);
+    cancelBtn.removeEventListener("click", onCancel);
+    if (modal.parentNode) {
+      document.body.removeChild(modal);
+    }
+  };
+
+  const onCancel = () => closeModal();
+
+  const onSubmit = async (e) => {
     e.preventDefault();
-    const submitBtn = modal.querySelector("#bookSubmitBtn");
     const appointmentData = {
       patientName: user.fullname,
       patientEmail: user.email,
@@ -220,6 +278,15 @@ async function openBookAppointmentModal(user) {
       appointmentTime: form.appointmentTime.value,
       reason: form.reason.value,
     };
+
+    if (!validateAppointmentTime(appointmentData.appointmentTime)) {
+      showToast(
+        "Appointment time must be in HH:MM AM/PM format (e.g. 09:00 AM).",
+        "error"
+      );
+      return;
+    }
+
     setBtnLoading(submitBtn, true);
     try {
       const response = await fetch(`${API_BASE}/api/appointments/book`, {
@@ -230,7 +297,7 @@ async function openBookAppointmentModal(user) {
       const result = await response.json();
       if (response.ok) {
         showToast("Appointment booked successfully!", "success");
-        document.body.removeChild(modal);
+        closeModal();
         location.reload();
       } else {
         showToast(result.message || "Booking failed", "error");
@@ -240,11 +307,18 @@ async function openBookAppointmentModal(user) {
     } finally {
       setBtnLoading(submitBtn, false);
     }
-  });
+  };
 
-  modal.querySelector("#cancelModal").addEventListener("click", () => {
-    document.body.removeChild(modal);
-  });
+  try {
+    await fetchDoctorsForSelect(sel);
+  } catch {
+    showToast("Could not load doctors.", "error");
+    closeModal();
+    return;
+  }
+
+  form.addEventListener("submit", onSubmit);
+  cancelBtn.addEventListener("click", onCancel);
 }
 
 async function cancelAppointment(id, reload = true) {
@@ -266,7 +340,7 @@ async function cancelAppointment(id, reload = true) {
 }
 
 function initPatientPage() {
-  const user = checkAuth("patient");
+  const user = checkRole("patient");
   if (!user) return;
 
   const nameEl = document.getElementById("patientName");
@@ -353,7 +427,7 @@ function initPatientPage() {
               const canCancel =
                 st === "scheduled" || st === "rescheduled";
               const cancelBtn = canCancel
-                ? `<button type="button" class="cancel-apt-btn" data-id="${apt._id}">Cancel</button>`
+                ? `<button type="button" class="btn-danger btn-sm cancel-apt-btn" data-id="${escapeHtml(apt._id)}">Cancel</button>`
                 : "";
               return `<tr>
                 <td>${escapeHtml(apt.doctorName)}</td>
@@ -366,17 +440,17 @@ function initPatientPage() {
             })
             .join("");
           allAppointmentsDiv.innerHTML = `
-            <table class="dash-table" style="width:100%; border-collapse:collapse;">
+            <div class="table-wrap"><table class="dash-table">
               <thead><tr>
-                <th style="text-align:left;border-bottom:1px solid #ccc;padding:8px;">Doctor</th>
-                <th style="text-align:left;border-bottom:1px solid #ccc;padding:8px;">Date</th>
-                <th style="text-align:left;border-bottom:1px solid #ccc;padding:8px;">Time</th>
-                <th style="text-align:left;border-bottom:1px solid #ccc;padding:8px;">Reason</th>
-                <th style="text-align:left;border-bottom:1px solid #ccc;padding:8px;">Status</th>
-                <th style="text-align:left;border-bottom:1px solid #ccc;padding:8px;">Actions</th>
+                <th>Doctor</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr></thead>
               <tbody>${rows}</tbody>
-            </table>`;
+            </table></div>`;
           allAppointmentsDiv.querySelectorAll(".cancel-apt-btn").forEach((btn) => {
             btn.addEventListener("click", () =>
               cancelAppointment(btn.dataset.id, true)
@@ -418,21 +492,23 @@ function initPatientPage() {
               return `<tr>
                 <td>${escapeHtml(p.medication)}</td>
                 <td>${escapeHtml(p.dosage)}</td>
+                <td>${escapeHtml(p.notes || "—")}</td>
                 <td>${escapeHtml(p.createdBy)}</td>
                 <td>${escapeHtml(dt)}</td>
               </tr>`;
             })
             .join("");
           prescriptionHistory.innerHTML = `
-            <table class="dash-table" style="width:100%; border-collapse:collapse;">
+            <div class="table-wrap"><table class="dash-table">
               <thead><tr>
-                <th style="text-align:left;border-bottom:1px solid #ccc;padding:8px;">Medication</th>
-                <th style="text-align:left;border-bottom:1px solid #ccc;padding:8px;">Dosage</th>
-                <th style="text-align:left;border-bottom:1px solid #ccc;padding:8px;">Doctor</th>
-                <th style="text-align:left;border-bottom:1px solid #ccc;padding:8px;">Date</th>
+                <th>Medication</th>
+                <th>Dosage</th>
+                <th>Notes</th>
+                <th>Doctor</th>
+                <th>Date</th>
               </tr></thead>
               <tbody>${rows}</tbody>
-            </table>`;
+            </table></div>`;
         }
       }
     } catch (err) {
@@ -443,7 +519,7 @@ function initPatientPage() {
 
   load();
 
-  const bookBtn = document.querySelector(".btn_book");
+  const bookBtn = document.querySelector(".btn-book, .btn_book");
   if (bookBtn) {
     bookBtn.addEventListener("click", async () => {
       const u = JSON.parse(localStorage.getItem("user") || "{}");
@@ -480,7 +556,7 @@ async function updateAppointmentStatus(id, status) {
 }
 
 function initDoctorPage() {
-  const user = checkAuth("doctor");
+  const user = checkRole("doctor");
   if (!user) return;
 
   const createdByField = document.getElementById("prescriptionCreatedBy");
@@ -524,42 +600,43 @@ function initDoctorPage() {
             '<li>No appointments scheduled.</li>';
         } else {
           appointmentsList.innerHTML = "";
+          const wrap = document.createElement("div");
+          wrap.className = "table-wrap";
           const tbl = document.createElement("table");
           tbl.className = "dash-table";
-          tbl.style.cssText = "width:100%;border-collapse:collapse;";
           tbl.innerHTML = `
             <thead><tr>
-              <th style="text-align:left;padding:8px;border-bottom:1px solid #ccc;">Patient</th>
-              <th style="text-align:left;padding:8px;border-bottom:1px solid #ccc;">Email</th>
-              <th style="text-align:left;padding:8px;border-bottom:1px solid #ccc;">Date</th>
-              <th style="text-align:left;padding:8px;border-bottom:1px solid #ccc;">Time</th>
-              <th style="text-align:left;padding:8px;border-bottom:1px solid #ccc;">Reason</th>
-              <th style="text-align:left;padding:8px;border-bottom:1px solid #ccc;">Status</th>
-              <th style="text-align:left;padding:8px;border-bottom:1px solid #ccc;">Actions</th>
+              <th>Patient</th>
+              <th>Email</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr></thead><tbody></tbody>`;
           const tbody = tbl.querySelector("tbody");
           doctorAppointments.forEach((apt) => {
             const date = new Date(apt.appointmentDate).toLocaleDateString();
             const tr = document.createElement("tr");
             const st = (apt.status || "scheduled").toLowerCase();
-            const viewBtn = `<button type="button" class="view-patient-btn" data-patient="${encodeURIComponent(apt.patientName)}">View</button>`;
+            const viewBtn = `<button type="button" class="btn-primary btn-sm view-patient-btn" data-patient="${escapeHtml(apt.patientName)}">View</button>`;
             const statusActions =
               st === "scheduled" || st === "rescheduled"
-                ? ` <button type="button" class="apt-complete" data-id="${apt._id}">Completed</button>
-                   <button type="button" class="apt-cancel" data-id="${apt._id}">Cancelled</button>`
+                ? ` <button type="button" class="btn-primary btn-sm apt-complete" data-id="${escapeHtml(apt._id)}">Completed</button>
+                   <button type="button" class="btn-danger btn-sm apt-cancel" data-id="${escapeHtml(apt._id)}">Cancelled</button>`
                 : "";
             tr.innerHTML = `
-              <td style="padding:8px;">${escapeHtml(apt.patientName)}</td>
-              <td style="padding:8px;">${escapeHtml(apt.patientEmail)}</td>
-              <td style="padding:8px;">${escapeHtml(date)}</td>
-              <td style="padding:8px;">${escapeHtml(apt.appointmentTime)}</td>
-              <td style="padding:8px;">${escapeHtml(apt.reason)}</td>
-              <td style="padding:8px;">${escapeHtml(apt.status || "scheduled")}</td>
-              <td style="padding:8px;">${viewBtn}${statusActions}</td>`;
+              <td>${escapeHtml(apt.patientName)}</td>
+              <td>${escapeHtml(apt.patientEmail)}</td>
+              <td>${escapeHtml(date)}</td>
+              <td>${escapeHtml(apt.appointmentTime)}</td>
+              <td>${escapeHtml(apt.reason)}</td>
+              <td>${escapeHtml(apt.status || "scheduled")}</td>
+              <td>${viewBtn}${statusActions}</td>`;
             tbody.appendChild(tr);
           });
-          appointmentsList.innerHTML = "";
-          appointmentsList.appendChild(tbl);
+          wrap.appendChild(tbl);
+          appointmentsList.appendChild(wrap);
 
           appointmentsList.querySelectorAll(".apt-complete").forEach((btn) => {
             btn.addEventListener("click", () =>
@@ -590,29 +667,31 @@ function initDoctorPage() {
               const dt = p.createdAt
                 ? new Date(p.createdAt).toLocaleDateString()
                 : "";
-              return `<tr data-id="${p._id}">
+              return `<tr data-id="${escapeHtml(p._id)}">
                 <td>${escapeHtml(p.patientName)}</td>
                 <td>${escapeHtml(p.medication)}</td>
                 <td>${escapeHtml(p.dosage)}</td>
+                <td>${escapeHtml(p.notes || "—")}</td>
                 <td>${escapeHtml(dt)}</td>
                 <td>
-                  <button type="button" class="doc-edit-rx" data-id="${p._id}" data-med="${escapeHtml(p.medication)}" data-dosage="${escapeHtml(p.dosage)}">Edit</button>
-                  <button type="button" class="doc-delete-rx" data-id="${p._id}">Delete</button>
+                   <button type="button" class="btn-primary btn-sm doc-edit-rx" data-id="${escapeHtml(p._id)}" data-med="${escapeHtml(p.medication)}" data-dosage="${escapeHtml(p.dosage)}" data-notes="${escapeHtml(p.notes || "")}" data-patient="${escapeHtml(p.patientName)}">Edit</button>
+                  <button type="button" class="btn-danger btn-sm doc-delete-rx" data-id="${escapeHtml(p._id)}">Delete</button>
                 </td>
               </tr>`;
             })
             .join("");
           rxHost.innerHTML = `
-            <table class="dash-table" style="width:100%;border-collapse:collapse;">
+            <div class="table-wrap"><table class="dash-table">
               <thead><tr>
-                <th style="text-align:left;padding:8px;">Patient</th>
-                <th style="text-align:left;padding:8px;">Medication</th>
-                <th style="text-align:left;padding:8px;">Dosage</th>
-                <th style="text-align:left;padding:8px;">Date</th>
-                <th style="text-align:left;padding:8px;">Actions</th>
+                <th>Patient</th>
+                <th>Medication</th>
+                <th>Dosage</th>
+                <th>Notes</th>
+                <th>Date</th>
+                <th>Actions</th>
               </tr></thead>
               <tbody>${rows}</tbody>
-            </table>`;
+            </table></div>`;
 
           rxHost.querySelectorAll(".doc-delete-rx").forEach((btn) => {
             btn.addEventListener("click", async () => {
@@ -645,8 +724,15 @@ function initDoctorPage() {
                 btn.dataset.med || "";
               document.getElementById("editDosage").value =
                 btn.dataset.dosage || "";
+              document.getElementById("editNotes").value =
+                btn.dataset.notes || "";
+              document.getElementById("editPatientName").value =
+                btn.dataset.patient || "";
+              const patientLabel = document.getElementById("editPrescriptionPatient");
+              if (patientLabel) patientLabel.textContent = `Patient: ${btn.dataset.patient || ""}`;
               const card = document.getElementById("editPrescriptionCard");
-              if (card) card.style.display = "block";
+              showEl(card);
+              card.scrollIntoView({ behavior: "smooth", block: "start" });
             });
           });
         }
@@ -666,8 +752,7 @@ function initDoctorPage() {
           patientsList.innerHTML = "";
           patients.forEach((p) => {
             const div = document.createElement("div");
-            div.style.borderBottom = "1px solid #ccc";
-            div.style.padding = "10px";
+            div.className = "patient-row";
             div.innerHTML = `<strong>${escapeHtml(p.fullname)}</strong> - ${escapeHtml(p.email)} | ${escapeHtml(p.phone || "N/A")}`;
             patientsList.appendChild(div);
           });
@@ -692,6 +777,7 @@ function initDoctorPage() {
         patientName: prescriptionForm.patientName.value.trim(),
         medication: prescriptionForm.medication.value.trim(),
         dosage: prescriptionForm.dosage.value.trim(),
+        notes: prescriptionForm.notes?.value.trim() || "",
         createdBy: u.fullname,
       };
       if (
@@ -713,9 +799,8 @@ function initDoctorPage() {
         if (response.ok) {
           showToast("Prescription added.", "success");
           prescriptionForm.reset();
-          prescriptionForm.style.display = "none";
-          const card = document.getElementById("prescriptionCard");
-          if (card) card.style.display = "block";
+          hideEl(prescriptionForm);
+          showEl(document.getElementById("prescriptionCard"));
           if (status) status.textContent = "";
           location.reload();
         } else {
@@ -762,13 +847,13 @@ function initDoctorPage() {
           resultsDiv.innerHTML = "";
           prescriptions.forEach((p) => {
             const div = document.createElement("div");
-            div.style.cssText =
-              "border:1px solid #ddd;padding:10px;margin:5px 0;";
+            div.className = "search-result-item";
             div.innerHTML = `
               <strong>${escapeHtml(p.medication)}</strong> - ${escapeHtml(p.dosage)}<br>
-              <small>${p.createdAt ? new Date(p.createdAt).toLocaleDateString() : ""}</small><br>
-              <button type="button" class="edit-pres-btn" data-id="${p._id}" data-med="${escapeHtml(p.medication)}" data-dosage="${escapeHtml(p.dosage)}">Edit</button>
-              <button type="button" class="delete-pres-btn" data-id="${p._id}">Delete</button>`;
+              <span>${escapeHtml(p.notes || "")}</span><br>
+              <small>${escapeHtml(p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "")}</small><br>
+              <button type="button" class="btn-primary btn-sm edit-pres-btn" data-id="${escapeHtml(p._id)}" data-med="${escapeHtml(p.medication)}" data-dosage="${escapeHtml(p.dosage)}" data-notes="${escapeHtml(p.notes || "")}" data-patient="${escapeHtml(p.patientName)}">Edit</button>
+              <button type="button" class="btn-danger btn-sm delete-pres-btn" data-id="${escapeHtml(p._id)}">Delete</button>`;
             resultsDiv.appendChild(div);
           });
         }
@@ -782,13 +867,7 @@ function initDoctorPage() {
 
   document.addEventListener("click", async (e) => {
     if (e.target.classList.contains("view-patient-btn")) {
-      const raw = e.target.getAttribute("data-patient") || "";
-      let patientName = raw;
-      try {
-        patientName = decodeURIComponent(raw);
-      } catch {
-        patientName = raw;
-      }
+      const patientName = e.target.getAttribute("data-patient") || "";
       const sp = document.getElementById("searchPatientName");
       if (sp) sp.value = patientName;
       document.getElementById("searchPrescriptionBtn")?.click();
@@ -800,10 +879,16 @@ function initDoctorPage() {
       document.getElementById("editMedication").value =
         e.target.dataset.med || "";
       document.getElementById("editDosage").value = e.target.dataset.dosage || "";
+      document.getElementById("editNotes").value = e.target.dataset.notes || "";
+      document.getElementById("editPatientName").value =
+        e.target.dataset.patient || "";
+      const patientLabel = document.getElementById("editPrescriptionPatient");
+      if (patientLabel) patientLabel.textContent = `Patient: ${e.target.dataset.patient || ""}`;
       const sr = document.getElementById("searchResults");
-      if (sr) sr.style.display = "none";
-      const epc = document.getElementById("editPrescriptionCard");
-      if (epc) epc.style.display = "block";
+      hideEl(sr);
+      const card = document.getElementById("editPrescriptionCard");
+      showEl(card);
+      card.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     if (e.target.classList.contains("delete-pres-btn")) {
@@ -830,10 +915,8 @@ function initDoctorPage() {
     }
 
     if (e.target.id === "cancelEditBtn") {
-      const epc = document.getElementById("editPrescriptionCard");
-      if (epc) epc.style.display = "none";
-      const sr = document.getElementById("searchResults");
-      if (sr) sr.style.display = "block";
+      hideEl(document.getElementById("editPrescriptionCard"));
+      showEl(document.getElementById("searchResults"));
     }
   });
 
@@ -854,6 +937,7 @@ function initDoctorPage() {
             body: JSON.stringify({
               medication: document.getElementById("editMedication").value,
               dosage: document.getElementById("editDosage").value,
+              notes: document.getElementById("editNotes").value,
             }),
           }
         );
@@ -882,19 +966,20 @@ function initDoctorPage() {
       const patientName = e.target.dataset.patient;
       const card = document.getElementById("prescriptionCard");
       const form = document.getElementById("prescriptionForm");
-      if (card) card.style.display = "none";
+      hideEl(card);
       if (form) {
-        form.style.display = "block";
+        showEl(form);
         form.patientName.value = patientName || "";
         form.medication.value = "";
         form.dosage.value = "";
+        if (form.notes) form.notes.value = "";
       }
     }
   });
 }
 
 function initAdminPage() {
-  const user = checkAuth("admin");
+  const user = checkRole("admin");
   if (!user) return;
 
   const adminNameEl = document.getElementById("adminName");
@@ -942,32 +1027,32 @@ function initAdminPage() {
       const usersList = document.getElementById("usersList");
       if (usersList) {
         usersList.innerHTML = `
-          <table class="dash-table" style="width:100%;border-collapse:collapse;">
+          <div class="table-wrap"><table class="dash-table">
             <thead><tr>
-              <th style="text-align:left;padding:8px;">Full Name</th>
-              <th style="text-align:left;padding:8px;">Email</th>
-              <th style="text-align:left;padding:8px;">Phone</th>
-              <th style="text-align:left;padding:8px;">Role</th>
-              <th style="text-align:left;padding:8px;">Actions</th>
+              <th>Full Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Role</th>
+              <th>Actions</th>
             </tr></thead>
             <tbody>
               ${users
                 .map(
                   (u) => `
                 <tr>
-                  <td style="padding:8px;">${escapeHtml(u.fullname)}</td>
-                  <td style="padding:8px;">${escapeHtml(u.email)}</td>
-                  <td style="padding:8px;">${escapeHtml(u.phone || "N/A")}</td>
-                  <td style="padding:8px;">${escapeHtml(u.role)}</td>
-                  <td style="padding:8px;">
-                    <button type="button" class="edit-user" data-id="${u._id}">Edit</button>
-                    <button type="button" class="delete-user" data-id="${u._id}">Delete</button>
+                  <td>${escapeHtml(u.fullname)}</td>
+                  <td>${escapeHtml(u.email)}</td>
+                  <td>${escapeHtml(u.phone || "N/A")}</td>
+                  <td>${escapeHtml(u.role)}</td>
+                  <td>
+                    <button type="button" class="btn-primary btn-sm edit-user" data-id="${escapeHtml(u._id)}">Edit</button>
+                    <button type="button" class="btn-danger btn-sm delete-user" data-id="${escapeHtml(u._id)}">Delete</button>
                   </td>
                 </tr>`
                 )
                 .join("")}
             </tbody>
-          </table>`;
+          </table></div>`;
       }
 
       const aptRes = await fetch(`${API_BASE}/api/appointments/all`, {
@@ -980,31 +1065,31 @@ function initAdminPage() {
           adminApts.innerHTML = "<p>No appointments.</p>";
         } else {
           adminApts.innerHTML = `
-            <table class="dash-table" style="width:100%;border-collapse:collapse;">
+            <div class="table-wrap"><table class="dash-table">
               <thead><tr>
-                <th style="text-align:left;padding:8px;">Patient</th>
-                <th style="text-align:left;padding:8px;">Doctor</th>
-                <th style="text-align:left;padding:8px;">Date</th>
-                <th style="text-align:left;padding:8px;">Time</th>
-                <th style="text-align:left;padding:8px;">Reason</th>
-                <th style="text-align:left;padding:8px;">Status</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Reason</th>
+                <th>Status</th>
               </tr></thead>
               <tbody>
                 ${appointments
                   .map((a) => {
                     const d = new Date(a.appointmentDate).toLocaleDateString();
                     return `<tr>
-                      <td style="padding:8px;">${escapeHtml(a.patientName)}</td>
-                      <td style="padding:8px;">${escapeHtml(a.doctorName)}</td>
-                      <td style="padding:8px;">${escapeHtml(d)}</td>
-                      <td style="padding:8px;">${escapeHtml(a.appointmentTime)}</td>
-                      <td style="padding:8px;">${escapeHtml(a.reason)}</td>
-                      <td style="padding:8px;">${escapeHtml(a.status || "scheduled")}</td>
+                      <td>${escapeHtml(a.patientName)}</td>
+                      <td>${escapeHtml(a.doctorName)}</td>
+                      <td>${escapeHtml(d)}</td>
+                      <td>${escapeHtml(a.appointmentTime)}</td>
+                      <td>${escapeHtml(a.reason)}</td>
+                      <td>${escapeHtml(a.status || "scheduled")}</td>
                     </tr>`;
                   })
                   .join("")}
               </tbody>
-            </table>`;
+            </table></div>`;
         }
       }
 
@@ -1018,13 +1103,14 @@ function initAdminPage() {
           adminRx.innerHTML = "<p>No prescriptions.</p>";
         } else {
           adminRx.innerHTML = `
-            <table class="dash-table" style="width:100%;border-collapse:collapse;">
+            <div class="table-wrap"><table class="dash-table">
               <thead><tr>
-                <th style="text-align:left;padding:8px;">Patient</th>
-                <th style="text-align:left;padding:8px;">Medication</th>
-                <th style="text-align:left;padding:8px;">Dosage</th>
-                <th style="text-align:left;padding:8px;">Doctor</th>
-                <th style="text-align:left;padding:8px;">Date</th>
+                <th>Patient</th>
+                <th>Medication</th>
+                <th>Dosage</th>
+                <th>Notes</th>
+                <th>Doctor</th>
+                <th>Date</th>
               </tr></thead>
               <tbody>
                 ${rx
@@ -1033,16 +1119,17 @@ function initAdminPage() {
                       ? new Date(p.createdAt).toLocaleDateString()
                       : "";
                     return `<tr>
-                      <td style="padding:8px;">${escapeHtml(p.patientName)}</td>
-                      <td style="padding:8px;">${escapeHtml(p.medication)}</td>
-                      <td style="padding:8px;">${escapeHtml(p.dosage)}</td>
-                      <td style="padding:8px;">${escapeHtml(p.createdBy)}</td>
-                      <td style="padding:8px;">${escapeHtml(dt)}</td>
+                      <td>${escapeHtml(p.patientName)}</td>
+                      <td>${escapeHtml(p.medication)}</td>
+                      <td>${escapeHtml(p.dosage)}</td>
+                      <td>${escapeHtml(p.notes || "—")}</td>
+                      <td>${escapeHtml(p.createdBy)}</td>
+                      <td>${escapeHtml(dt)}</td>
                     </tr>`;
                   })
                   .join("")}
               </tbody>
-            </table>`;
+            </table></div>`;
         }
       }
     } catch (err) {
@@ -1078,11 +1165,11 @@ function initAdminPage() {
       return;
     }
     if (!validatePassword(password)) {
-      if (errEl) errEl.textContent = "Password must be at least 6 characters.";
+      if (errEl) errEl.textContent = getPasswordError(password);
       return;
     }
     if (!validatePhone(phone)) {
-      if (errEl) errEl.textContent = "Phone must have at least 10 digits.";
+      if (errEl) errEl.textContent = getPhoneError(phone);
       return;
     }
 
@@ -1157,7 +1244,7 @@ function initAdminPage() {
       return;
     }
     if (!validatePhone(phone)) {
-      if (errEl) errEl.textContent = "Phone must have at least 10 digits.";
+      if (errEl) errEl.textContent = getPhoneError(phone);
       return;
     }
 
@@ -1219,7 +1306,7 @@ function initAdminPage() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const path = window.location.pathname.split("/").pop() || "Index.html";
+  const path = window.location.pathname.split("/").pop() || "index.html";
   const currentPage = path.toLowerCase();
 
   const hero = document.querySelector(".container_data");
@@ -1244,8 +1331,12 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const errEl = document.getElementById("registerError");
       const okEl = document.getElementById("registerSuccess");
+      const phoneErrEl = document.getElementById("phoneError");
+      const passwordErrEl = document.getElementById("passwordError");
       if (errEl) errEl.textContent = "";
       if (okEl) okEl.textContent = "";
+      if (phoneErrEl) phoneErrEl.textContent = "";
+      if (passwordErrEl) passwordErrEl.textContent = "";
 
       const data = {
         fullname: registerForm.fullname.value.trim(),
@@ -1264,13 +1355,13 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       if (!validatePhone(registerForm.phone.value)) {
-        if (errEl)
-          errEl.textContent = "Phone must contain at least 10 digits.";
+        const msg = getPhoneError(registerForm.phone.value);
+        if (phoneErrEl) phoneErrEl.textContent = msg;
         return;
       }
-      if (!validatePassword(data.password)) {
-        if (errEl)
-          errEl.textContent = "Password must be at least 6 characters.";
+      const passwordErr = getPasswordError(data.password);
+      if (passwordErr) {
+        if (passwordErrEl) passwordErrEl.textContent = passwordErr;
         return;
       }
 
@@ -1279,7 +1370,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const response = await fetch(`${API_BASE}/api/auth/register`, {
           method: "POST",
-          headers: getAuthHeaders(),
+          headers: getJsonHeaders(),
           body: JSON.stringify(data),
         });
 
@@ -1300,7 +1391,9 @@ document.addEventListener("DOMContentLoaded", () => {
           if (errEl) errEl.textContent = result.message || "Registration failed";
         }
       } catch {
-        if (errEl) errEl.textContent = "Error connecting to server.";
+        if (errEl) {
+          errEl.textContent = `Cannot reach server at ${API_BASE}. Start the backend with: node backend/server.js`;
+        }
       } finally {
         setBtnLoading(submitBtn, false);
       }
@@ -1354,7 +1447,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const response = await fetch(`${API_BASE}/api/auth/login`, {
           method: "POST",
-          headers: getAuthHeaders(),
+          headers: getJsonHeaders(),
           body: JSON.stringify({ email, password, role }),
         });
 
@@ -1371,7 +1464,9 @@ document.addEventListener("DOMContentLoaded", () => {
           if (loginError) loginError.textContent = result.message || "Login failed";
         }
       } catch {
-        if (loginError) loginError.textContent = "Error connecting to server.";
+        if (loginError) {
+          loginError.textContent = `Cannot reach server at ${API_BASE}. Start the backend with: node backend/server.js`;
+        }
       } finally {
         setBtnLoading(loginBtn, false);
       }

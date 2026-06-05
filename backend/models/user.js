@@ -30,6 +30,9 @@ const userSchema = new mongoose.Schema({
   timestamps: true // This adds createdAt and updatedAt fields
 });
 
+userSchema.index({ email: 1, role: 1 }, { unique: true });
+userSchema.index({ role: 1 });
+
 userSchema.pre("save", async function hashPassword(next) {
   if (!this.isModified("password")) {
     return next();

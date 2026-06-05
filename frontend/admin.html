@@ -4,75 +4,68 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard - ClinicCare</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="icon" href="images/first-aid-box_6705669.png" type="image/png" />
-  <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="styles/admin.css" />
 </head>
 <body>
 
 <div class="main">
-  <!-- Navbar -->
   <nav class="navbar">
     <div class="nav-links-container">
-    <div class="logo">
-      <img src="images/first-aid-box_6705669.png" alt="Clinic Logo" height="40" />
-    </div>
-    <ul class="nav-links">
-      <li><a href="#dashboard">Dashboard</a></li>
-      <li><a href="#users">Manage Users</a></li>
-      <li><a href="#appointments-admin">Appointments</a></li>
-      <li><a href="#prescriptions-admin">Prescriptions</a></li>
-      <li><a href="#logs">System Logs</a></li>
-      <li><a href="#settings">Settings</a></li>
-    </ul>
+      <div class="logo">
+        <img src="images/first-aid-box_6705669.png" alt="Clinic Logo" />
+      </div>
+      <ul class="nav-links">
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#users">Manage Users</a></li>
+        <li><a href="#appointments-admin">Appointments</a></li>
+        <li><a href="#prescriptions-admin">Prescriptions</a></li>
+        <li><a href="#logs">System Logs</a></li>
+        <li><a href="#settings">Settings</a></li>
+      </ul>
     </div>
     <div class="auth-buttons">
       <button type="button" class="btn" onclick="logout()">Logout</button>
     </div>
   </nav>
 
-  <!-- Dashboard Section -->
   <section id="dashboard">
     <h1 class="section-title">Admin Dashboard</h1>
-    <p>Welcome, <span id="adminName">Admin</span>. Monitor and manage system-wide activities here.</p>
+    <p class="section-desc">Welcome, <span id="adminName">Admin</span>. Monitor and manage system-wide activities here.</p>
 
-    <div style="margin: 16px 0;">
-      <button type="button" id="createAdminBtn" style="padding: 10px 16px; cursor: pointer;">Create Admin User</button>
-    </div>
+    <button type="button" id="createAdminBtn" class="btn-primary mb-1">Create Admin User</button>
 
-    <div class="card">
-      <h3>Total Users</h3>
-      <p id="userStats">Loading...</p>
-    </div>
-
-    <div class="card">
-      <h3>Recent Activity</h3>
-      <p id="recentActivity">Loading recent activity...</p>
+    <div class="card-grid">
+      <div class="card">
+        <h3>Total Users</h3>
+        <p id="userStats" class="loading-text">Loading...</p>
+      </div>
+      <div class="card">
+        <h3>Recent Activity</h3>
+        <p id="recentActivity" class="loading-text">Loading recent activity...</p>
+      </div>
     </div>
   </section>
 
-  <!-- Manage Users Section -->
   <section id="users">
     <h2 class="section-title">Manage Users</h2>
-    <p>View, edit, or delete users from the platform.</p>
+    <p class="section-desc">View, edit, or delete users from the platform.</p>
     <div id="usersList"></div>
   </section>
 
   <section id="appointments-admin">
     <h2 class="section-title">All Appointments</h2>
-    <div id="adminAppointmentsTable"><p>Loading...</p></div>
+    <div id="adminAppointmentsTable"><p class="loading-text">Loading...</p></div>
   </section>
 
   <section id="prescriptions-admin">
     <h2 class="section-title">All Prescriptions</h2>
-    <div id="adminPrescriptionsTable"><p>Loading...</p></div>
+    <div id="adminPrescriptionsTable"><p class="loading-text">Loading...</p></div>
   </section>
 
-  <!-- System Logs Section -->
   <section id="logs">
     <h2 class="section-title">System Logs</h2>
-    <p>Audit activity across the system.</p>
-
+    <p class="section-desc">Audit activity across the system.</p>
     <ul>
       <li>[10:15 AM] Admin logged in</li>
       <li>[10:17 AM] Updated doctor profile - Dr. Smith</li>
@@ -80,10 +73,9 @@
     </ul>
   </section>
 
-  <!-- Settings Section -->
   <section id="settings">
     <h2 class="section-title">Settings</h2>
-    <p>Manage platform-wide configurations.</p>
+    <p class="section-desc">Manage platform-wide configurations.</p>
 
     <div class="card">
       <strong>System Maintenance Mode</strong><br>
@@ -91,7 +83,7 @@
       <button type="button" id="card_btn_maintenance">Enable</button>
     </div>
 
-    <div class="card">
+    <div class="card mt-1">
       <strong>Notification Settings</strong><br>
       Email Alerts: Enabled<br>
       SMS Alerts: Disabled<br>
@@ -100,35 +92,37 @@
   </section>
 </div>
 
-<dialog id="editUserDialog" style="border-radius:12px;padding:20px;max-width:420px;width:90vw;">
+<dialog id="editUserDialog">
   <form id="editUserForm">
     <h3>Edit User</h3>
-    <label>Full name<br /><input type="text" name="fullname" required style="width:100%;padding:8px;margin:6px 0;" /></label>
-    <label>Email<br /><input type="email" name="email" required style="width:100%;padding:8px;margin:6px 0;" /></label>
-    <label>Phone<br /><input type="tel" name="phone" style="width:100%;padding:8px;margin:6px 0;" /></label>
-    <div id="editUserError" style="color:red;font-size:13px;margin:8px 0;"></div>
-    <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;">
+    <label>Full name<input type="text" name="fullname" required /></label>
+    <label>Email<input type="email" name="email" required /></label>
+    <label>Phone<input type="tel" name="phone" /></label>
+    <div id="editUserError" class="field-error"></div>
+    <div class="dialog-actions">
       <button type="button" id="cancelEditUserBtn">Cancel</button>
       <button type="submit">Save</button>
     </div>
   </form>
 </dialog>
 
-<dialog id="createAdminDialog" style="border-radius:12px;padding:20px;max-width:420px;width:90vw;">
+<dialog id="createAdminDialog">
   <form id="createAdminForm">
     <h3>Create Admin User</h3>
-    <label>Full name<br /><input type="text" name="fullname" required style="width:100%;padding:8px;margin:6px 0;" /></label>
-    <label>Email<br /><input type="email" name="email" required style="width:100%;padding:8px;margin:6px 0;" /></label>
-    <label>Phone<br /><input type="tel" name="phone" required style="width:100%;padding:8px;margin:6px 0;" /></label>
-    <label>Password<br /><input type="password" name="password" required minlength="6" style="width:100%;padding:8px;margin:6px 0;" /></label>
-    <div id="createAdminError" style="color:red;font-size:13px;margin:8px 0;"></div>
-    <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;">
+    <label>Full name<input type="text" name="fullname" required /></label>
+    <label>Email<input type="email" name="email" required /></label>
+    <label>Phone<input type="tel" name="phone" required placeholder="10-digit mobile (starts with 6-9)" /></label>
+    <label>Password<input type="password" name="password" required minlength="8" /></label>
+    <div id="createAdminError" class="field-error"></div>
+    <div class="dialog-actions">
       <button type="button" id="cancelCreateAdminBtn">Cancel</button>
       <button type="submit">Create</button>
     </div>
   </form>
 </dialog>
 
+<script src="config.js"></script>
+<script src="utils/auth.js"></script>
 <script src="main.js"></script>
 </body>
 </html>

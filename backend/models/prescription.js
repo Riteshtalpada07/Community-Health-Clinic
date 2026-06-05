@@ -6,6 +6,11 @@ const prescriptionSchema = new mongoose.Schema({
     required: [true, "Patient name is required"],
     trim: true
   },
+  patientEmail: {
+    type: String,
+    trim: true,
+    lowercase: true
+  },
   medication: {
     type: String,
     required: [true, "Medication is required"],
@@ -28,5 +33,8 @@ const prescriptionSchema = new mongoose.Schema({
 }, {
   timestamps: true // This adds createdAt and updatedAt fields
 });
+
+prescriptionSchema.index({ patientEmail: 1 });
+prescriptionSchema.index({ createdBy: 1 });
 
 module.exports = mongoose.model("Prescription", prescriptionSchema);

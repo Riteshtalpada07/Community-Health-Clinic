@@ -5,7 +5,8 @@ const Prescription = require("../models/prescription");
 // ➕ Add a prescription
 router.post("/add", async (req, res) => {
   try {
-    const { patientName, medication, dosage, createdBy } = req.body;
+    const { patientName, patientEmail, medication, dosage, createdBy, notes } =
+      req.body;
 
     if (!patientName || !medication || !dosage || !createdBy) {
       return res.status(400).json({ message: "All fields are required." });
@@ -13,9 +14,11 @@ router.post("/add", async (req, res) => {
 
     const prescription = new Prescription({
       patientName,
+      patientEmail,
       medication,
       dosage,
       createdBy,
+      notes,
     });
 
     await prescription.save();
@@ -97,7 +100,7 @@ router.delete("/delete/:id", async (req, res) => {
 router.put("/update/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { medication, dosage } = req.body;
+    const { medication, dosage, notes } = req.body;
 
     if (!medication || !dosage) {
       return res
@@ -105,11 +108,14 @@ router.put("/update/:id", async (req, res) => {
         .json({ message: "Medication and dosage are required" });
     }
 
-    const prescription = await Prescription.findByIdAndUpdate(
-      id,
-      { medication, dosage },
-      { new: true }
-    );
+    const updates = { medication, dosage };
+    if (notes !== undefined) {
+      updates.notes = notes;
+    }
+
+    const prescription = await Prescription.findByIdAndUpdate(id, updates, {
+      new: true,
+    });
 
     if (!prescription) {
       return res.status(404).json({ message: "Prescription not found" });

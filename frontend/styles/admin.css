@@ -1,0 +1,177 @@
+@import url("common.css");
+
+.main {
+  max-width: var(--max-content);
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 3vw, 2rem) 4rem;
+}
+
+#dashboard {
+  text-align: center;
+  padding-top: 1.5rem;
+}
+
+#dashboard::after {
+  content: "";
+  display: block;
+  width: 4rem;
+  height: 3px;
+  margin: 1.25rem auto 1.5rem;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+}
+
+#dashboard .section-title {
+  font-size: clamp(1.65rem, 3.5vw, 2.15rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+#dashboard .card-grid {
+  text-align: left;
+}
+
+#createAdminBtn {
+  min-width: 11rem;
+  min-height: 2.65rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-grid .card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-height: 8.5rem;
+  animation: statCardIn 0.55s ease-out both;
+}
+
+.card-grid .card:nth-child(1) { animation-delay: 0.05s; }
+.card-grid .card:nth-child(2) { animation-delay: 0.12s; }
+
+@keyframes statCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.card-grid .card h3 {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.card-grid .card p {
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+#users,
+#appointments-admin,
+#prescriptions-admin {
+  background: linear-gradient(
+    145deg,
+    rgba(27, 70, 103, 0.55),
+    rgba(15, 40, 65, 0.5)
+  );
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid rgba(68, 187, 211, 0.15);
+}
+
+.card-grid .card::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-accent), transparent);
+  opacity: 0.4;
+}
+
+#users,
+#appointments-admin,
+#prescriptions-admin {
+  animation: sectionIn 0.5s ease-out both;
+}
+
+@keyframes sectionIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#logs ul {
+  background: rgba(2, 28, 53, 0.38);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(68, 187, 211, 0.15);
+  border-left: 3px solid var(--color-accent);
+  padding: 1.15rem 1.35rem 1.15rem 2.25rem;
+  max-width: 40rem;
+  list-style: none;
+}
+
+#logs ul li {
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.9rem;
+  font-family: monospace;
+  color: var(--color-text-muted);
+}
+
+#logs ul li:last-child {
+  border-bottom: none;
+}
+
+#settings .card {
+  max-width: 30rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+#settings .card strong {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+#settings button {
+  margin-top: 0.85rem;
+  align-self: flex-start;
+}
+
+#card_btn_maintenance,
+#card_btn_notify {
+  background: radial-gradient(
+    circle at 30% 20%,
+    #52606f 0%,
+    var(--color-primary-light) 38%,
+    var(--color-primary) 100%
+  );
+  color: #fff;
+  min-height: 2.35rem;
+  padding: 0.5rem 1.25rem;
+  border: 1px solid rgba(68, 187, 211, 0.2);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.86rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#card_btn_maintenance:hover,
+#card_btn_notify:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md), 0 0 18px rgba(68, 187, 211, 0.22);
+}
